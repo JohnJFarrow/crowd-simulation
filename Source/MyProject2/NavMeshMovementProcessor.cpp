@@ -13,6 +13,7 @@
 #include "Misc/App.h"
 #include "MassExecutionContext.h"
 #include "MassEntityManager.h"
+#include "NavFilters/NavigationQueryFilter.h"
 
 
 
@@ -32,7 +33,7 @@ void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMass
 	//{
 	//Context.GetWorld()->GetDeltaSeconds();
 	FApp::GetDeltaTime();
-		
+
 	myEntities.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
 		{
 			const TArrayView<FTransformFragment> transforms = Context.GetMutableFragmentView<FTransformFragment>();
@@ -122,7 +123,7 @@ void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		});
 
 	//});
-	
+
 //
 //
 //
