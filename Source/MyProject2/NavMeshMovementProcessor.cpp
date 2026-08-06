@@ -17,11 +17,14 @@
 #include "Mass\ExternalSubsystemTraits.h"
 
 UNavMeshMovementProcessor::UNavMeshMovementProcessor()
+	: myEntities(*this)
 {
 	UE_LOG(LogTemp, Warning, TEXT("NAVMESH REGISTERED"));
 	bAutoRegisterWithProcessingPhases = true;
-	ExecutionFlags = (int32)EProcessorExecutionFlags::All;
 	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
+	ProcessingPhase = EMassProcessingPhase::PrePhysics;
+	ExecutionFlags = (int32)EProcessorExecutionFlags::All;
+	bRequiresGameThreadExecution = false;
 }
 
 void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)

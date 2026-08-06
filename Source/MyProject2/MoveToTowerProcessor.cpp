@@ -9,6 +9,7 @@
 
 
 UMoveToTowerProcessor::UMoveToTowerProcessor()
+	:myEntities(*this)
 {
 	UE_LOG(LogTemp, Warning, TEXT("REGISTERED"));
 	bAutoRegisterWithProcessingPhases = true;

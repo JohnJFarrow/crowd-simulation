@@ -39,7 +39,7 @@ void UCustomMassNavigationObstacleGridProcessor::InitializeInternal(UObject& Own
 
 void UCustomMassNavigationObstacleGridProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	FMassEntityQuery BaseEntityQuery;
+	FMassEntityQuery BaseEntityQuery(EntityManager);
 	BaseEntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
 	BaseEntityQuery.AddRequirement<FAgentRadiusFragment>(EMassFragmentAccess::ReadOnly);
 	BaseEntityQuery.AddRequirement<FCustomMassNavigationObstacleGridCellLocationFragment>(EMassFragmentAccess::ReadWrite);
