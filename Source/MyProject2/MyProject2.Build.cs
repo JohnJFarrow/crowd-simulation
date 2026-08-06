@@ -17,7 +17,7 @@ public class MyProject2 : ModuleRules
             "MassAIDebug",
 
 			// Runtime/MassEntity Plugin Modules
-			"MassEntity",
+			//"MassEntity",
 
 			// Runtime/MassGameplay Plugin Modules
 			"MassActors",

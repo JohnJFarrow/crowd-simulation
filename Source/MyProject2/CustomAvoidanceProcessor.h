@@ -6,16 +6,12 @@
 #include "MassProcessor.h"
 #include "MassNavigationSubsystem.h"
 #include "HierarchicalHashGrid2D.h"
-
+#include "Mass\EntityHandle.h"
 #include "Misc/MTAccessDetector.h"
 
 #include "nanoflann.hpp"
 
 #include "CustomAvoidanceProcessor.generated.h"
-
-/*
-
-*/
 
 struct PointCloud2D
 {
@@ -28,7 +24,10 @@ struct PointCloud2D
 	std::vector<Point> pts;
 
 	// Must return the number of data points
-	inline size_t kdtree_get_point_count() const { return pts.size(); }
+	inline size_t kdtree_get_point_count() const
+	{
+		return pts.size();
+	}
 
 	// Returns the dim'th component of the idx'th point in the class:
 	// Since this is inlined and the "dim" argument is typically an immediate
@@ -77,61 +76,67 @@ public:
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	const CustomHashGrid2D& GetObstacleGrid() const { return CustomAvoidanceObstacleGrid; }
-	CustomHashGrid2D& GetObstacleGridMutable() { return CustomAvoidanceObstacleGrid; }
+	const CustomHashGrid2D& GetObstacleGrid() const
+	{
+		return CustomAvoidanceObstacleGrid;
+	}
+	CustomHashGrid2D& GetObstacleGridMutable()
+	{
+		return CustomAvoidanceObstacleGrid;
+	}
 
 	void SetPoints(const PointCloud2D& newpoints)
 	{
-		UE_MT_SCOPED_WRITE_ACCESS(PointsDetector)
-			points = newpoints;
+		UE_MT_SCOPED_WRITE_ACCESS(PointsDetector);
+		points = newpoints;
 	}
 
 	PointCloud2D GetPoints() const
 	{
-		UE_MT_SCOPED_READ_ACCESS(PointsDetector)
-			return points;
+		UE_MT_SCOPED_READ_ACCESS(PointsDetector);
+		return points;
 	}
 
 	bool isQueueEmpty() const
 	{
-		UE_MT_SCOPED_READ_ACCESS(RemoveQueueDetector)
-			return entitiesToRemove.Num() == 0;
+		UE_MT_SCOPED_READ_ACCESS(RemoveQueueDetector);
+		return entitiesToRemove.Num() == 0;
 	}
 
 	TArray<FMassEntityHandle> GetZombiesToKill()
 	{
-		UE_MT_SCOPED_READ_ACCESS(RemoveQueueDetector)
-			return entitiesToRemove;
+		UE_MT_SCOPED_READ_ACCESS(RemoveQueueDetector);
+		return entitiesToRemove;
 	}
 
 	void EraseZombiesToKill()
 	{
-		UE_MT_SCOPED_WRITE_ACCESS(RemoveQueueDetector)
-			entitiesToRemove.Reset();
+		UE_MT_SCOPED_WRITE_ACCESS(RemoveQueueDetector);
+		entitiesToRemove.Reset();
 	}
 
 	UFUNCTION(BlueprintCallable)
-		int GetZombiesWithinSafeArea(const double squaredRadius)
+	int GetZombiesWithinSafeArea(const double squaredRadius)
 	{
 		const FVector2D origin{ 0,0 };
-		UE_MT_SCOPED_READ_ACCESS(PointsDetector)
-			int count = 0;
-			for (const auto p : points.pts)
+		UE_MT_SCOPED_READ_ACCESS(PointsDetector);
+		int count = 0;
+		for (const auto p : points.pts)
+		{
+			if (FVector2D::DistSquared(origin, FVector2D{ p.x, p.y }) < squaredRadius)
 			{
-				if(FVector2D::DistSquared(origin, FVector2D{p.x, p.y}) < squaredRadius)
-				{
-					++count;
-				}
+				++count;
 			}
+		}
 
-			return count;
+		return count;
 	}
 
 	UFUNCTION(BlueprintCallable)
-		int AddZombiesToKillQueue(const FVector2D position)
+	int AddZombiesToKillQueue(const FVector2D position)
 	{
-		UE_MT_SCOPED_READ_ACCESS(PointsDetector)
-			my_kd_tree_t grid_TEST(2 /*dim*/, points, { 10 /* max leaf */ });
+		UE_MT_SCOPED_READ_ACCESS(PointsDetector);
+		my_kd_tree_t grid_TEST(2 /*dim*/, points, { 10 /* max leaf */ });
 
 		const double                                       squaredRadius = 140000;
 		std::vector<nanoflann::ResultItem<size_t, double>> indices_dists;
@@ -146,12 +151,12 @@ public:
 		grid_TEST.findNeighbors(resultSet, c.data()/*, nanoflann::SearchParameters{ 100.f }*/);
 
 		{
-			UE_MT_SCOPED_WRITE_ACCESS(RemoveQueueDetector)
-				for (int i = 0; i < indices_dists.size(); ++i)
-				{
-					const auto idx = indices_dists[i].first;
-					entitiesToRemove.Add(grid_TEST.dataset_.pts[idx].entity);
-				}
+			UE_MT_SCOPED_WRITE_ACCESS(RemoveQueueDetector);
+			for (int i = 0; i < indices_dists.size(); ++i)
+			{
+				const auto idx = indices_dists[i].first;
+				entitiesToRemove.Add(grid_TEST.dataset_.pts[idx].entity);
+			}
 		}
 
 		return indices_dists.size();
@@ -164,11 +169,11 @@ public:
 	CustomHashGrid2D CustomAvoidanceObstacleGrid;
 
 	// Test structure
-	UE_MT_DECLARE_RW_ACCESS_DETECTOR(PointsDetector)
-		PointCloud2D points;
+	UE_MT_DECLARE_RW_ACCESS_DETECTOR(PointsDetector);
+	PointCloud2D points;
 
-	UE_MT_DECLARE_RW_ACCESS_DETECTOR(RemoveQueueDetector)
-		TArray<FMassEntityHandle> entitiesToRemove;
+	UE_MT_DECLARE_RW_ACCESS_DETECTOR(RemoveQueueDetector);
+	TArray<FMassEntityHandle> entitiesToRemove;
 };
 
 template<>
@@ -192,8 +197,8 @@ public:
 	UCustomAvoidanceProcessor();
 
 protected:
-	virtual void ConfigureQueries() override;
-	virtual void Initialize(UObject& Owner) override;
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>&) override;
+	virtual void InitializeInternal(UObject&, const TSharedRef<FMassEntityManager>&) override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
 
 private:
@@ -217,8 +222,8 @@ public:
 	UCustomStandingAvoidanceProcessor();
 
 protected:
-	virtual void ConfigureQueries() override;
-	virtual void Initialize(UObject& Owner) override;
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>&) override;
+	virtual void InitializeInternal(UObject&, const TSharedRef<FMassEntityManager>&) override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
 
 private:

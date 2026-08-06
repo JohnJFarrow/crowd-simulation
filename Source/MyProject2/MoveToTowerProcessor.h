@@ -8,18 +8,18 @@
 #include "MoveToTowerProcessor.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class MYPROJECT2_API UMoveToTowerProcessor : public UMassProcessor
 {
 	GENERATED_BODY()
-	
+
 public:
 	UMoveToTowerProcessor();
 
 protected:
-	virtual void ConfigureQueries() override;
+	virtual void ConfigureQueries(const TSharedRef<FMassEntityManager>&) override;
 	virtual void Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context) override;
 
 private:

@@ -6,7 +6,7 @@
 #include "MassEntityTraitBase.h"
 #include "MassEntityTypes.h"
 #include "NavigationPath.h"
-
+#include "Mass\ExternalSubsystemTraits.h"
 #include "NavMeshPathTrait.generated.h"
 
 
@@ -27,6 +27,19 @@ struct FNavMeshPathFragment : public FMassFragment
 		myPathIndex = 0;
 	}
 };
+
+// FNavMeshPathFragment is not trivially copyable so should not be stored in a mass fragment
+// TODO fix this, remove the declaration brlow
+
+template<>
+struct TMassFragmentTraits<FNavMeshPathFragment>
+{
+	enum
+	{
+		AuthorAcceptsItsNotTriviallyCopyable = true
+	};
+};
+
 
 /**
  *

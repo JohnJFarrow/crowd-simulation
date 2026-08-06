@@ -18,7 +18,7 @@
 #include "MassNavigationUtils.h"
 #include "Engine/World.h"
 #include "MassEntityUtils.h"
-
+#include "Mass\ExternalSubsystemTraits.h"
 #include "CustomMassObstacleAvoidanceTrait.h"
 
 
@@ -206,7 +206,9 @@ UCustomAvoidanceProcessor::UCustomAvoidanceProcessor()
 	sliceTurn = 0;
 }
 
-void UCustomAvoidanceProcessor::ConfigureQueries()
+
+
+void UCustomAvoidanceProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&)
 {
 	// new
 	EntityQuery.AddRequirement<FCustomMassNavigationObstacleGridCellLocationFragment>(EMassFragmentAccess::ReadWrite);
@@ -226,9 +228,9 @@ void UCustomAvoidanceProcessor::ConfigureQueries()
 	EntityQuery.RegisterWithProcessor(*this);
 }
 
-void UCustomAvoidanceProcessor::Initialize(UObject& Owner)
+void UCustomAvoidanceProcessor::InitializeInternal(UObject& Owner, const TSharedRef<FMassEntityManager>& Manager)
 {
-	Super::Initialize(Owner);
+	Super::InitializeInternal(Owner, Manager);
 
 	World = Owner.GetWorld();
 	CustomNavigationSubsystem = UWorld::GetSubsystem<UCustomMassNavigationSubsystem>(Owner.GetWorld());
@@ -251,13 +253,13 @@ void UCustomAvoidanceProcessor::Execute(FMassEntityManager& EntityManager, FMass
 	if (isFirstFrame)
 	{
 		isFirstFrame = false;
-		const auto entitiesCount = EntityQuery.GetNumMatchingEntities(EntityManager);
+		const auto entitiesCount = EntityQuery.GetNumMatchingEntities();
 		const auto sliceSize = entitiesCount / slicingCount;
 
 		int count = 0;
 		int sliceIdx = 1;
 
-		EntityQuery.ForEachEntityChunk(EntityManager, Context, [this, sliceSize, &count, &sliceIdx, &EntityManager](FMassExecutionContext& Context)
+		EntityQuery.ForEachEntityChunk(Context, [this, sliceSize, &count, &sliceIdx, &EntityManager](FMassExecutionContext& Context)
 			{
 				const auto entitiesChunkCount = Context.GetNumEntities();
 
@@ -280,8 +282,8 @@ void UCustomAvoidanceProcessor::Execute(FMassEntityManager& EntityManager, FMass
 
 			});
 	}
-	
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &grid_TEST, &EntityManager](FMassExecutionContext& Context)
+
+	EntityQuery.ForEachEntityChunk(Context, [this, &grid_TEST, &EntityManager](FMassExecutionContext& Context)
 		{
 			const auto entitiesChunkCount = Context.GetNumEntities();
 
@@ -303,7 +305,7 @@ void UCustomAvoidanceProcessor::Execute(FMassEntityManager& EntityManager, FMass
 					const FVector AgentLocation = Location.GetTransform().GetTranslation();
 
 					// radius search:
-					
+
 					indices_dists.reserve(6);
 					nanoflann::RadiusResultSet<double, size_t>         resultSet(
 						squaredRadius, indices_dists);
@@ -338,7 +340,7 @@ void UCustomAvoidanceProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		});
 
 
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &grid_TEST, &EntityManager](FMassExecutionContext& Context)
+	EntityQuery.ForEachEntityChunk(Context, [this, &grid_TEST, &EntityManager](FMassExecutionContext& Context)
 		{
 			const float DeltaTime = Context.GetDeltaTimeSeconds();
 			const double CurrentTime = World->GetTimeSeconds();
@@ -685,14 +687,14 @@ void UCustomAvoidanceProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		});
 
 
-		if (sliceTurn == slicingCount)
-		{
-			sliceTurn = 1;
-		}
-		else
-		{
-			++sliceTurn;
-		}
+	if (sliceTurn == slicingCount)
+	{
+		sliceTurn = 1;
+	}
+	else
+	{
+		++sliceTurn;
+	}
 }
 
 
@@ -717,7 +719,7 @@ UCustomStandingAvoidanceProcessor::UCustomStandingAvoidanceProcessor()
 	ExecutionOrder.ExecuteAfter.Add(TEXT("MassMovingAvoidanceProcessor"));
 }
 
-void UCustomStandingAvoidanceProcessor::ConfigureQueries()
+void UCustomStandingAvoidanceProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&)
 {
 	EntityQuery.AddRequirement<FMassGhostLocationFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassNavigationEdgesFragment>(EMassFragmentAccess::ReadOnly);
@@ -733,9 +735,9 @@ void UCustomStandingAvoidanceProcessor::ConfigureQueries()
 
 }
 
-void UCustomStandingAvoidanceProcessor::Initialize(UObject& Owner)
+void UCustomStandingAvoidanceProcessor::InitializeInternal(UObject& Owner, const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Super::Initialize(Owner);
+	Super::InitializeInternal(Owner, EntityManager);
 
 	World = Owner.GetWorld();
 	CustomNavigationSubsystem = UWorld::GetSubsystem<UCustomMassNavigationSubsystem>(Owner.GetWorld());
@@ -751,7 +753,7 @@ void UCustomStandingAvoidanceProcessor::Execute(FMassEntityManager& EntityManage
 	}
 
 	// Avoidance while standing
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &EntityManager](FMassExecutionContext& Context)
+	EntityQuery.ForEachEntityChunk(Context, [this, &EntityManager](FMassExecutionContext& Context)
 		{
 			const int32 NumEntities = Context.GetNumEntities();
 			const float DeltaTime = Context.GetDeltaTimeSeconds();
@@ -774,7 +776,9 @@ void UCustomStandingAvoidanceProcessor::Execute(FMassEntityManager& EntityManage
 			struct FSortedObstacle
 			{
 				FSortedObstacle() = default;
-				FSortedObstacle(const FMassEntityHandle InEntity, const FVector InLocation, const FVector InForward, const FVector::FReal InDistSq) : Entity(InEntity), Location(InLocation), Forward(InForward), DistSq(InDistSq) {}
+				FSortedObstacle(const FMassEntityHandle InEntity, const FVector InLocation, const FVector InForward, const FVector::FReal InDistSq) : Entity(InEntity), Location(InLocation), Forward(InForward), DistSq(InDistSq)
+				{
+				}
 
 				FMassEntityHandle Entity;
 				FVector Location = FVector::ZeroVector;

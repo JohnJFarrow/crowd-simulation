@@ -26,17 +26,18 @@ UCustomMassNavigationObstacleGridProcessor::UCustomMassNavigationObstacleGridPro
 {
 	ExecutionFlags = (int32)EProcessorExecutionFlags::All;
 	ExecutionOrder.ExecuteAfter.Add(UE::Mass::ProcessorGroupNames::Movement);
-	
+
 }
 
-void UCustomMassNavigationObstacleGridProcessor::Initialize(UObject& Owner)
+void UCustomMassNavigationObstacleGridProcessor::InitializeInternal(UObject& Owner, const TSharedRef<FMassEntityManager>& EntityManager)
 {
-	Super::Initialize(Owner);
+	Super::InitializeInternal(Owner, EntityManager);
 
 	CustomNavigationSubsystem = UWorld::GetSubsystem<UCustomMassNavigationSubsystem>(Owner.GetWorld());
 }
 
-void UCustomMassNavigationObstacleGridProcessor::ConfigureQueries()
+
+void UCustomMassNavigationObstacleGridProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
 	FMassEntityQuery BaseEntityQuery;
 	BaseEntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
@@ -72,7 +73,7 @@ void UCustomMassNavigationObstacleGridProcessor::Execute(FMassEntityManager& Ent
 		CustomNavigationSubsystem->EraseZombiesToKill();
 	}
 
-	AddToGridEntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &pc, &EntityManager](FMassExecutionContext& Context)
+	AddToGridEntityQuery.ForEachEntityChunk(Context, [this, &pc, &EntityManager](FMassExecutionContext& Context)
 		{
 			const int32 NumEntities = Context.GetNumEntities();
 			TConstArrayView<FTransformFragment> LocationList = Context.GetFragmentView<FTransformFragment>();
@@ -87,7 +88,7 @@ void UCustomMassNavigationObstacleGridProcessor::Execute(FMassEntityManager& Ent
 			}
 		});
 
-	UpdateGridEntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &pc, &EntityManager](FMassExecutionContext& Context)
+	UpdateGridEntityQuery.ForEachEntityChunk(Context, [this, &pc, &EntityManager](FMassExecutionContext& Context)
 		{
 			const int32 NumEntities = Context.GetNumEntities();
 			TConstArrayView<FTransformFragment> LocationList = Context.GetFragmentView<FTransformFragment>();
@@ -101,7 +102,7 @@ void UCustomMassNavigationObstacleGridProcessor::Execute(FMassEntityManager& Ent
 			}
 		});
 
-	RemoveFromGridEntityQuery.ForEachEntityChunk(EntityManager, Context, [this, &EntityManager](FMassExecutionContext& Context)
+	RemoveFromGridEntityQuery.ForEachEntityChunk(Context, [this, &EntityManager](FMassExecutionContext& Context)
 		{
 			const int32 NumEntities = Context.GetNumEntities();
 
@@ -120,12 +121,12 @@ void UCustomMassNavigationObstacleGridProcessor::Execute(FMassEntityManager& Ent
 UCustomMassNavigationObstacleRemoverProcessor::UCustomMassNavigationObstacleRemoverProcessor()
 	: EntityQuery(*this)
 {
-	ObservedType = FCustomMassNavigationObstacleGridCellLocationFragment::StaticStruct();
-	Operation = EMassObservedOperation::Remove;
+	ObservedTypes.Add(FCustomMassNavigationObstacleGridCellLocationFragment::StaticStruct());
+	ObservedOperations = EMassObservedOperationFlags::Remove;
 	ExecutionFlags = (int32)(EProcessorExecutionFlags::All);
 }
 
-void UCustomMassNavigationObstacleRemoverProcessor::ConfigureQueries()
+void UCustomMassNavigationObstacleRemoverProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>& EntityManager)
 {
 	EntityQuery.AddRequirement<FCustomMassNavigationObstacleGridCellLocationFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddSubsystemRequirement<UCustomMassNavigationSubsystem>(EMassFragmentAccess::ReadWrite);
@@ -133,7 +134,7 @@ void UCustomMassNavigationObstacleRemoverProcessor::ConfigureQueries()
 
 void UCustomMassNavigationObstacleRemoverProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
+	EntityQuery.ForEachEntityChunk(Context, [this](FMassExecutionContext& Context)
 		{
 			auto& HashGrid = Context.GetMutableSubsystemChecked<UCustomMassNavigationSubsystem>().GetObstacleGridMutable();
 			const int32 NumEntities = Context.GetNumEntities();

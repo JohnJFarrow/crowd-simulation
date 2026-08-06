@@ -16,7 +16,7 @@ UMoveToTowerProcessor::UMoveToTowerProcessor()
 	ExecutionOrder.ExecuteBefore.Add(UE::Mass::ProcessorGroupNames::Avoidance);
 }
 
-void UMoveToTowerProcessor::ConfigureQueries()
+void UMoveToTowerProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&)
 {
 	myEntities.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	myEntities.AddRequirement<FMoveToTargetFragment>(EMassFragmentAccess::ReadWrite);
@@ -37,7 +37,7 @@ void UMoveToTowerProcessor::Execute(FMassEntityManager& EntityManager, FMassExec
 			{
 				FTransform& transform = transforms[i].GetMutableTransform();
 				const auto& targetPos = targets[i].myTarget;
-				
+
 				const auto& target = targetPos - transform.GetLocation();
 
 				if (target.Length() < 200.f)

@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.3",
+	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -10,7 +10,6 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"MassSpawner",
-				"MassEntity",
 				"Engine"
 			]
 		}
@@ -29,10 +28,6 @@
 		},
 		{
 			"Name": "MassCrowd",
-			"Enabled": true
-		},
-		{
-			"Name": "MassEntity",
 			"Enabled": true
 		},
 		{

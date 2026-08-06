@@ -13,8 +13,8 @@
 #include "Misc/App.h"
 #include "MassExecutionContext.h"
 #include "MassEntityManager.h"
-
-
+#include "NavFilters\NavigationQueryFilter.h"
+#include "Mass\ExternalSubsystemTraits.h"
 
 UNavMeshMovementProcessor::UNavMeshMovementProcessor()
 {
@@ -32,8 +32,8 @@ void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMass
 	//{
 	//Context.GetWorld()->GetDeltaSeconds();
 	FApp::GetDeltaTime();
-		
-	myEntities.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
+
+	myEntities.ForEachEntityChunk(/*EntityManager,*/ Context, [this](FMassExecutionContext& Context)
 		{
 			const TArrayView<FTransformFragment> transforms = Context.GetMutableFragmentView<FTransformFragment>();
 			const TArrayView<FMassMoveTargetFragment> NavTargetsList = Context.GetMutableFragmentView<FMassMoveTargetFragment>();
@@ -122,7 +122,7 @@ void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMass
 		});
 
 	//});
-	
+
 //
 //
 //
@@ -203,7 +203,7 @@ void UNavMeshMovementProcessor::Execute(FMassEntityManager& EntityManager, FMass
 //		}));*/
 }
 
-void UNavMeshMovementProcessor::ConfigureQueries()
+void UNavMeshMovementProcessor::ConfigureQueries(const TSharedRef<FMassEntityManager>&)
 {
 	myEntities.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	myEntities.AddRequirement<FMassMoveTargetFragment>(EMassFragmentAccess::ReadWrite);
