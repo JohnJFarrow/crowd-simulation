@@ -28,7 +28,7 @@ void UMoveToTowerProcessor::Execute(FMassEntityManager& EntityManager, FMassExec
 {
 	//UE_LOG(LogTemp, Warning, TEXT("EXECUTED"));
 
-	myEntities.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Context)
+	myEntities.ForEachEntityChunk(Context, [this](FMassExecutionContext& Context)
 		{
 			const TArrayView<FTransformFragment> transforms = Context.GetMutableFragmentView<FTransformFragment>();
 			const TArrayView<FMoveToTargetFragment> targets = Context.GetMutableFragmentView<FMoveToTargetFragment>();

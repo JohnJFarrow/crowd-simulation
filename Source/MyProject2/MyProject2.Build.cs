@@ -12,16 +12,25 @@ public class MyProject2 : ModuleRules
 
         PublicIncludePaths.AddRange(new string[] { "../Ext/nanoflann/include" });
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "NavigationSystem", "AIModule", "StructUtils" });
-		PrivateDependencyModuleNames.AddRange(new string[] { "MassAIBehavior",
-            "MassAIDebug",
+		PublicDependencyModuleNames.AddRange(new string[] { 
+            "Core", 
+            "CoreUObject", 
+            "Engine", 
+            "InputCore", 
+            "EnhancedInput", 
+            "NavigationSystem", 
+            "AIModule", 
+            "StructUtils"
+        } );
 
-			// Runtime/MassEntity Plugin Modules
-			//"MassEntity",
-
-			// Runtime/MassGameplay Plugin Modules
-			"MassActors",
+		PrivateDependencyModuleNames.AddRange(new string[] { 
+            "MassAIBehavior",
+            "MassEntity",
             "MassCommon",
+            "MassCore",
+            "MassCrowd",
+            "MassActors",
+            "MassAIDebug",
             "MassGameplayDebug",
             "MassLOD",
             "MassMovement",
