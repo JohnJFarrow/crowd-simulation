@@ -1,0 +1,1 @@
+d:\EpicSource\581\Engine\Build\BatchFiles\Build.bat MZServer Win64 Development -Project=%cd%\MZ.uproject -WaitMutex

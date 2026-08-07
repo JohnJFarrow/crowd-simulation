@@ -1,0 +1,1 @@
+d:\EpicSource\581\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -Project=%cd%\MZ.uproject -target=LyraClient -client -platform=Win64 -clientconfig=Debug -build %1 %2 %3
