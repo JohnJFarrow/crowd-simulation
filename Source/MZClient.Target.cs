@@ -10,6 +10,8 @@ public class MZClientTarget : TargetRules
 		Type = TargetType.Client;
 		DefaultBuildSettings = BuildSettingsVersion.Latest;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
-		ExtraModuleNames.Add("MZ");
+
+		ExtraModuleNames.AddRange(new string[] { "MZ" });
+		MZGameTarget.ApplySharedTargetSettings(this);	
 	}
 }

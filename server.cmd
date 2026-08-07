@@ -1,0 +1,1 @@
+Binaries\Win64\MZServer.exe -log %1 %2 %3

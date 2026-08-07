@@ -1,0 +1,1 @@
+Binaries\Win64\MZClient.exe 127.0.0.1:7777 -WINDOWED -ResX=1024 -ResY=768 %1 %2 %3
