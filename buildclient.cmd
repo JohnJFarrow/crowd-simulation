@@ -1,1 +1,1 @@
-d:\EpicSource\581\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -Project=%cd%\MyProject2.uproject -target=Myproject2Client -client -platform=Win64 -clientconfig=Development -build -progress
+d:\EpicSource\581\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -Project=%cd%\MZ.uproject -target=MZClient -client -platform=Win64 -clientconfig=Development -build -progress

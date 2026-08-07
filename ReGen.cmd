@@ -1,0 +1,2 @@
+del Intermediate\CachedAssetRegistry_0.bin
+"c:\EpicGames\UE_5.8\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.exe" -mode=GenerateProjectFiles -project=%cd%\MZ.uproject -game -rocket -progress 
